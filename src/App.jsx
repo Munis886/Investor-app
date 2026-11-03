@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
+import NavigationMenu from './components/NavigationMenu';
 import CandleChart from './components/CandleChart';
 import SignalCard from './components/SignalCard';
 import BacktestView from './components/BacktestView';
@@ -15,9 +16,14 @@ import {
   Info, 
   ShieldCheck, 
   TrendingUp,
+  TrendingDown,
   Cpu,
+  Zap,
+  Activity,
   Layers,
-  Sparkles
+  Sparkles,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 
 export default function App() {
@@ -26,18 +32,20 @@ export default function App() {
   const [candles, setCandles] = useState(() => getInitialAssetData('BTC_USDT'));
   const [isLive, setIsLive] = useState(false);
   const [activeTab, setActiveTab] = useState('CHART'); // 'CHART' | 'BACKTEST' | 'GUIDE'
+  const [isScanning, setIsScanning] = useState(false);
 
-  // Modallar
+  // Modallar va Menyu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
 
-  // Tanlangan aktiv obyekti
+  // Tanlangan aktiv
   const currentAsset = useMemo(() => {
     if (selectedAssetId === 'CUSTOM') {
       return {
         id: 'CUSTOM',
-        name: customAssetName || "Foydalanuvchi ma'lumotlari",
+        name: customAssetName || "Yuklangan Statistika",
         symbol: 'CUSTOM',
         unit: '$'
       };
@@ -53,130 +61,202 @@ export default function App() {
     }
   };
 
-  // Jonli bozor simulyatsiyasi (Live Mode)
+  // Jonli bozor simulyatsiyasi
   useEffect(() => {
     if (!isLive) return;
-
     const interval = setInterval(() => {
       setCandles(prev => simulateNextCandle(prev, 0.007));
     }, 2500);
-
     return () => clearInterval(interval);
   }, [isLive]);
 
-  // Bozor tahlili va bashoratli signallar hisobi
+  // Bozor tahlili va signallar hisobi
   const signal = useMemo(() => {
     return analyzeMarket(candles);
   }, [candles]);
 
-  // CSV ma'lumotlari yuklanganda
+  // Signal Olish harakati (Scanning animatsiyasi bilan)
+  const handleTriggerSignal = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      // Agar boshqa tabda bo'lsa, avtomatik ravishda grafik/signal bo'limiga qaytarish
+      setActiveTab('CHART');
+    }, 700);
+  };
+
+  // CSV yuklanganda
   const handleCustomDataLoaded = (newCandles, assetName) => {
     setCustomAssetName(assetName);
     setSelectedAssetId('CUSTOM');
     setCandles(newCandles);
     setIsLive(false);
+    handleTriggerSignal();
   };
 
-  // Yangi qo'lda kiritilgan sham
+  // Qo'lda sham qo'shilganda
   const handleAddCandle = (newCandle) => {
     setCandles(prev => [...prev.slice(-90), newCandle]);
+    handleTriggerSignal();
   };
 
-  // Qayta tiklash / yangilash
+  // Qayta tiklash
   const handleRefresh = () => {
     if (selectedAssetId !== 'CUSTOM') {
       setCandles(getInitialAssetData(selectedAssetId));
+      handleTriggerSignal();
     }
   };
 
+  // Statistik hisoblar (Ticker)
+  const lastCandle = candles[candles.length - 1] || { close: 100, open: 100, high: 100, low: 100, volume: 0 };
+  const firstCandle = candles[0] || lastCandle;
+  const priceChange = lastCandle.close - firstCandle.close;
+  const priceChangePercent = Number(((priceChange / firstCandle.close) * 100).toFixed(2));
+  const isPositive = priceChangePercent >= 0;
+
+  // 24s min / max
+  const high24h = Math.max(...candles.map(c => c.high));
+  const low24h = Math.min(...candles.map(c => c.low));
+  const totalVolume = candles.reduce((acc, c) => acc + c.volume, 0);
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col font-sans pb-10">
-      {/* Yuqori Panel */}
+      {/* 1. Tartibli Yuqori Panel (Header) */}
       <Header
         selectedAssetId={selectedAssetId}
         onSelectAsset={handleSelectAsset}
+        customAssetName={customAssetName}
+        currentPrice={lastCandle.close}
+        priceChangePercent={priceChangePercent}
+        unit={currentAsset.unit}
+        onOpenMenu={() => setIsMenuOpen(true)}
+        onTriggerSignal={handleTriggerSignal}
+        isScanning={isScanning}
+      />
+
+      {/* Ochiluvchi Boshqaruv Menyusi (Menu Drawer) */}
+      <NavigationMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
         isLive={isLive}
         onToggleLive={() => setIsLive(!isLive)}
         onOpenCsvModal={() => setIsCsvModalOpen(true)}
         onOpenManualModal={() => setIsManualModalOpen(true)}
         onOpenApkModal={() => setIsApkModalOpen(true)}
-        customAssetName={customAssetName}
         onRefreshData={handleRefresh}
+        onTriggerSignal={handleTriggerSignal}
       />
 
       {/* Asosiy Tana */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 space-y-4">
-        {/* Aktiv va Narx info paneli */}
-        <div className="bg-[#111827] border border-gray-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        {/* 2. Ticker Paneli: Aktiv statistikasi va narx diapazoni */}
+        <div className="bg-[#111827] border border-gray-800 rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+          {/* Chap: Aktiv nomi va joriy narx */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center font-bold text-sm text-indigo-400 border border-gray-700">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600/30 to-purple-600/30 border border-indigo-500/30 flex items-center justify-center font-black text-sm text-indigo-300">
               {currentAsset.symbol.slice(0, 3)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-black text-white">{currentAsset.name}</h1>
+                <h1 className="text-base sm:text-lg font-black text-white">{currentAsset.name}</h1>
                 <span className="text-xs text-gray-400 font-mono">({currentAsset.symbol})</span>
+                {isLive && (
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
+                    JONLI
+                  </span>
+                )}
               </div>
-              <div className="text-xs text-gray-400 flex items-center gap-2">
-                <span>Jami: <strong>{candles.length} ta sham</strong></span>
-                <span>•</span>
-                <span>Tahlil turi: <strong>Texnik & AI Sham Ko'rinishi</strong></span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-lg sm:text-xl font-black font-mono text-emerald-400">
+                  {lastCandle.close} <span className="text-xs font-sans text-gray-400">{currentAsset.unit}</span>
+                </span>
+                <span className={`flex items-center text-xs font-bold font-mono px-2 py-0.5 rounded-lg ${
+                  isPositive ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+                }`}>
+                  {isPositive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                  {isPositive ? `+${priceChangePercent}%` : `${priceChangePercent}%`}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Oxirgi narx ko'rsatkichi */}
-          {candles.length > 0 && (
-            <div className="text-right">
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Joriy Narx</div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-emerald-400 flex items-center gap-1.5 justify-end">
-                <span>{candles[candles.length - 1].close}</span>
-                <span className="text-sm font-sans text-gray-400">{currentAsset.unit}</span>
-              </div>
+          {/* O'ng: Statistik ko'rsatkichlar (Max, Min, Hajm, RSI) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 text-xs w-full lg:w-auto">
+            <div className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2">
+              <span className="text-[10px] text-gray-400 block uppercase">24s Maksimal</span>
+              <span className="font-mono font-bold text-gray-200">{high24h} {currentAsset.unit}</span>
             </div>
-          )}
+            <div className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2">
+              <span className="text-[10px] text-gray-400 block uppercase">24s Minimal</span>
+              <span className="font-mono font-bold text-gray-200">{low24h} {currentAsset.unit}</span>
+            </div>
+            <div className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2">
+              <span className="text-[10px] text-gray-400 block uppercase">Jami Hajm</span>
+              <span className="font-mono font-bold text-gray-200">{totalVolume.toLocaleString()}</span>
+            </div>
+            <div className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2">
+              <span className="text-[10px] text-gray-400 block uppercase">RSI Ko'rsatkichi</span>
+              <span className="font-mono font-bold text-yellow-400">{signal?.currentRsi || 50}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Tablar (Ko'rinishlar) */}
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-2">
-          <button
-            onClick={() => setActiveTab('CHART')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-              activeTab === 'CHART'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                : 'bg-gray-800/60 text-gray-400 hover:text-white'
-            }`}
-          >
-            <BarChart2 size={15} />
-            <span>Grafik va Signallar</span>
-          </button>
+        {/* 3. Asosiy Bo'limlar Navigatsiyasi (Tablar) va Katta "Signal Olish" paneli */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-800 pb-3">
+          {/* Tablar */}
+          <div className="flex items-center gap-1.5 bg-[#111827] p-1 rounded-xl border border-gray-800">
+            <button
+              onClick={() => setActiveTab('CHART')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                activeTab === 'CHART'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <BarChart2 size={14} />
+              <span>Grafik va Signal</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('BACKTEST')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-              activeTab === 'BACKTEST'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                : 'bg-gray-800/60 text-gray-400 hover:text-white'
-            }`}
-          >
-            <History size={15} />
-            <span>Strategiya Tahlili (Backtest)</span>
-          </button>
+            <button
+              onClick={() => setActiveTab('BACKTEST')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                activeTab === 'BACKTEST'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <History size={14} />
+              <span>Backtest Sinovi</span>
+            </button>
 
+            <button
+              onClick={() => setActiveTab('GUIDE')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                activeTab === 'GUIDE'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <HelpCircle size={14} />
+              <span>Qo'llanma</span>
+            </button>
+          </div>
+
+          {/* SIGNAL OLISH MAXSUS TUGMASI */}
           <button
-            onClick={() => setActiveTab('GUIDE')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-              activeTab === 'GUIDE'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                : 'bg-gray-800/60 text-gray-400 hover:text-white'
-            }`}
+            onClick={handleTriggerSignal}
+            disabled={isScanning}
+            className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition transform active:scale-95"
           >
-            <HelpCircle size={15} />
-            <span>Qo'llanma & Indikatorlar</span>
+            <Zap size={16} className={isScanning ? "animate-spin text-yellow-300" : "text-yellow-300 fill-yellow-300"} />
+            <span>{isScanning ? "AI Shamlar tahlil qilinmoqda..." : "⚡ Yangi Signal Olish"}</span>
           </button>
         </div>
 
-        {/* TAB 1: Sham Grafik va Signal Karti */}
+        {/* 4. TAB 1: Shamli Grafik & Signal Kartasi */}
         {activeTab === 'CHART' && (
           <div className="space-y-4">
             {/* Shamli Grafik */}
@@ -186,11 +266,13 @@ export default function App() {
               signal={signal}
             />
 
-            {/* AI Signal Karti */}
+            {/* AI Signal Kartasi */}
             <SignalCard
               signal={signal}
-              currentPrice={candles[candles.length - 1]?.close}
+              currentPrice={lastCandle.close}
               unit={currentAsset.unit}
+              onTriggerSignal={handleTriggerSignal}
+              isScanning={isScanning}
             />
           </div>
         )}
@@ -276,4 +358,3 @@ export default function App() {
     </div>
   );
 }
-

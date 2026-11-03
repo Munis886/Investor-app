@@ -1,0 +1,76 @@
+# InvestSignal AI — Shamli Statistik Tahlil va Bashoratli Signallar Ilovasi (.APK)
+
+Investitsiya va treyding uchun istalgan turdagi moliyaviy va statistik ma'lumotlarni sham (candlestick) ko'rinishida tahlil qiluvchi, sun'iy intellekt va texnik tahlil algoritmlari asosida taxminiy signallar (Buy / Sell / Hold) beruvchi to'laqonli mobil ilova.
+
+---
+
+## 📱 Tayyor .APK Fayli
+
+Loyiha muvaffaqiyatli Android platformasiga kompilyatsiya qilingan va tayyor `.apk` fayli yaratilgan:
+
+- **Asosiy papkada:** `InvestSignal.apk` (Hajmi: ~4.2 MB)
+- **Android Studio build papkasida:** `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### Smartfonga o'rnatish:
+1. `InvestSignal.apk` faylini smartfoningizga (Telegram, USB yoki Drive orqali) o'tkazing.
+2. Faylni oching va "O'rnatish" (Install) tugmasini bosing.
+3. Ilova to'liq mustaqil (oflayn) rejimda ishlaydi.
+
+---
+
+## 🚀 Asosiy Imkoniyatlar
+
+1. **Interaktiv Shamli Grafik (Candlestick Chart):**
+   - Yashil / Qizil shamlar (Open, High, Low, Close narxlari).
+   - Savdo hajmi (Volume) gistogrammasi.
+   - EMA 20 (Sariq) va EMA 50 (Moviy) trend chiziqlari.
+   - Bollinger Bands (20, 2) diapazoni.
+   - Zoom (+ / -) va Drag (surish) funksiyalari.
+   - Kursor yoki sensor bilan sham ustiga bosganda batafsil OHLCV ma'lumotlari.
+
+2. **AI & Texnik Tahlil Signallari (Predictive Signals):**
+   - **Signal turlari:** `STRONG BUY` (Kuchli xarid), `BUY` (Xarid), `NEUTRAL` (Kutish), `SELL` (Sotish), `STRONG SELL` (Kuchli sotish).
+   - **Ishonchlilik foizi (Confidence %):** 50% dan 95% gacha.
+   - **Trade parametrlari:** 
+     - Kirish narxi (Entry Price)
+     - Stop Loss (SL) — ATR orqali xavfsiz hisoblangan
+     - Take Profit (TP1, TP2, TP3)
+     - Risk / Reward nisbati (1:2.5)
+   - **O'zbek tilidagi batafsil izoh:** Har bir signal nima uchun berilganligi (RSI darajasi, MACD krossoveri, Bollinger holati, trend).
+
+3. **Sham Naqshlarini Aniqlash (Candlestick Patterns):**
+   - Bolg'a (Hammer)
+   - Teskari Bolg'a (Inverted Hammer)
+   - Otilgan Yulduz (Shooting Star)
+   - Qamrab Oluvchi O'sish (Bullish Engulfing)
+   - Qamrab Oluvchi Pasayish (Bearish Engulfing)
+   - Tong Yulduzi (Morning Star)
+   - Shom Yulduzi (Evening Star)
+   - Doji (Ikkilanish shami)
+
+4. **Istalgan Statistik Ma'lumotlarni Tahlil Qilish (CSV / Qo'lda kiritish):**
+   - **CSV Yuklash:** O'zingizning xohlagan aksiyangiz, kripto yoki kompaniya statistik ma'lumotlaringizni CSV orqali yuklang.
+   - **Qo'lda Sham Qo'shish (+ Sham):** Yangi narx kiritib, bashorat qanday o'zgarishini bir zumda ko'ring (What-If tahlil).
+   - **Tayyor aktivlar:** Bitcoin (BTC/USDT), Ethereum (ETH/USDT), Oltin (XAU/USD), Apple Inc. (AAPL), Toshkent fond birjasi (O'zmetkombinat).
+
+5. **Tarixiy Strategiya Sinovi (Backtest):**
+   - Strategiyaning yutuq foizi (Win Rate %).
+   - Jami daromadlik (Total Profit %).
+   - Oxirgi bitimlar tarixi jadvali.
+
+6. **Jonli Bozor Rejimi (Live Mode):**
+   - Haqiqiy bozor harakatlarini real vaqtda simulyatsiya qilish.
+
+---
+
+## 💻 Kompyuterda Ishga Tushirish (Veb Rejim)
+
+Loyiha papkasida buyruq satrida:
+
+```bash
+# Paketlar vaqtinchalik tekshiruvi:
+npm run dev
+```
+
+Brauzerda `http://localhost:3000` manzilida ochiladi.
+

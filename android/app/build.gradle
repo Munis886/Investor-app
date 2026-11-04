@@ -18,8 +18,12 @@ android {
     }
     buildTypes {
         release {
+            // Kodlarni qisqartirish va tozalashni o'chirish
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            
+            // Ishlatilmagan resurslarni olib tashlashni o'chirish
+            shrinkResources false
+            
         }
     }
     compileOptions {

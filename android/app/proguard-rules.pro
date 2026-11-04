@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Kodlarni qirqishni (shrinking) to'xtatish
+-dontshrink
+
+# Funksiya va sinf nomlarini o'zgartirishni (obfuscation) to'xtatish
+-dontobfuscate
+
+# Barcha sinflar va metodlarni to'liq saqlab qolish
+-keep class ** { *; }
+-keep interface ** { *; }

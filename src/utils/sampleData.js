@@ -7,8 +7,8 @@ function generateInitialCandles(basePrice, volatility, count = 70, trend = 0.001
   let currentPrice = basePrice;
   const now = new Date();
   
-  // 4 soatlik qadamlar bilan orqaga
-  const stepMinutes = 240; 
+  // 1 soatlik qadamlar bilan orqaga
+  const stepMinutes = 60; 
   let timeCursor = new Date(now.getTime() - count * stepMinutes * 60 * 1000);
 
   for (let i = 0; i < count; i++) {
@@ -19,8 +19,8 @@ function generateInitialCandles(basePrice, volatility, count = 70, trend = 0.001
     const open = currentPrice;
     const close = Math.max(open * 0.5, open * (1 + changePercent));
     
-    const highSurge = Math.random() * volatility * 0.7 * open;
-    const lowSurge = Math.random() * volatility * 0.7 * open;
+    const highSurge = Math.random() * volatility * 0.6 * open;
+    const lowSurge = Math.random() * volatility * 0.6 * open;
     const high = Math.max(open, close) + highSurge;
     const low = Math.min(open, close) - lowSurge;
     
@@ -42,50 +42,93 @@ function generateInitialCandles(basePrice, volatility, count = 70, trend = 0.001
   return candles;
 }
 
+export const ASSET_CATEGORIES = [
+  { id: 'ALL', label: 'Barchasi' },
+  { id: 'CRYPTO', label: 'Kripto' },
+  { id: 'FOREX_METAL', label: 'Forex & Metall' },
+  { id: 'STOCKS', label: 'Aksiyalar' },
+  { id: 'UZSE', label: 'UZSE (Mahalliy)' }
+];
+
 export const ASSETS = [
   {
     id: 'BTC_USDT',
     name: 'Bitcoin',
     symbol: 'BTC/USDT',
-    category: 'Kriptovalyuta',
+    category: 'CRYPTO',
+    categoryLabel: 'Kripto',
     basePrice: 87400,
-    volatility: 0.025,
+    volatility: 0.022,
     unit: '$'
   },
   {
     id: 'ETH_USDT',
     name: 'Ethereum',
     symbol: 'ETH/USDT',
-    category: 'Kriptovalyuta',
+    category: 'CRYPTO',
+    categoryLabel: 'Kripto',
     basePrice: 3150,
-    volatility: 0.03,
+    volatility: 0.028,
     unit: '$'
   },
   {
     id: 'XAU_USD',
     name: 'Oltin (Gold)',
     symbol: 'XAU/USD',
-    category: 'Qimmatbaho Metall',
+    category: 'FOREX_METAL',
+    categoryLabel: 'Forex & Metall',
     basePrice: 2740,
-    volatility: 0.009,
+    volatility: 0.008,
+    unit: '$'
+  },
+  {
+    id: 'EUR_USD',
+    name: 'Evro / AQSh Dollari',
+    symbol: 'EUR/USD',
+    category: 'FOREX_METAL',
+    categoryLabel: 'Forex & Metall',
+    basePrice: 1.0845,
+    volatility: 0.004,
     unit: '$'
   },
   {
     id: 'AAPL',
     name: 'Apple Inc.',
     symbol: 'AAPL',
-    category: 'AQSh Aksiya',
-    basePrice: 232,
-    volatility: 0.015,
+    category: 'STOCKS',
+    categoryLabel: 'Aksiyalar',
+    basePrice: 232.50,
+    volatility: 0.014,
+    unit: '$'
+  },
+  {
+    id: 'TSLA',
+    name: 'Tesla Inc.',
+    symbol: 'TSLA',
+    category: 'STOCKS',
+    categoryLabel: 'Aksiyalar',
+    basePrice: 248.80,
+    volatility: 0.032,
     unit: '$'
   },
   {
     id: 'UZSE_OKMK',
     name: "O'zmetkombinat",
     symbol: 'UZMK (UZSE)',
-    category: "O'zbekiston Birjasi",
+    category: 'UZSE',
+    categoryLabel: 'UZSE',
     basePrice: 8450,
     volatility: 0.012,
+    unit: "so'm"
+  },
+  {
+    id: 'UZSE_HMKB',
+    name: 'Hamkorbank ATB',
+    symbol: 'HMKB (UZSE)',
+    category: 'UZSE',
+    categoryLabel: 'UZSE',
+    basePrice: 42.00,
+    volatility: 0.015,
     unit: "so'm"
   }
 ];
@@ -96,9 +139,9 @@ export function getInitialAssetData(assetId) {
 }
 
 /**
- * Jonli simulyatsiya: har bir necha soniyada yangi sham (tick) qo'shish
+ * Jonli simulyatsiya: yangi sham (tick)
  */
-export function simulateNextCandle(prevCandles, volatility = 0.01) {
+export function simulateNextCandle(prevCandles, volatility = 0.008) {
   if (!prevCandles || prevCandles.length === 0) return prevCandles;
   
   const last = prevCandles[prevCandles.length - 1];
@@ -121,9 +164,7 @@ export function simulateNextCandle(prevCandles, volatility = 0.01) {
     volume
   };
 
-  // Oxirgi 100 ta shamni saqlash
-  const nextList = [...prevCandles.slice(-90), newCandle];
-  return nextList;
+  return [...prevCandles.slice(-85), newCandle];
 }
 
 /**
@@ -176,4 +217,3 @@ export function parseCSVData(csvText) {
 
   return candles;
 }
-

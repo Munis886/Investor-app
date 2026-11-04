@@ -70,17 +70,17 @@ export default function HistorySettingsView({
           <div className="bg-[#10141d] border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#2979ff] to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                AI
+                IS
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white">InvestSignal Engine Pro</h3>
-                <p className="text-xs text-gray-400 font-mono">Klient: #8892104 • Algoritmik Tahlil</p>
+                <p className="text-xs text-gray-400">Oflayn demo · algoritmik tahlil</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-xl text-[10px] font-bold text-[#00e676]">
-              <span className="w-2 h-2 rounded-full bg-[#00e676] animate-pulse"></span>
-              <span>Server Ulangan</span>
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-xl text-[10px] font-bold text-amber-300">
+              <span className="w-2 h-2 rounded-full bg-amber-300"></span>
+              <span>Demo</span>
             </div>
           </div>
 
@@ -121,8 +121,8 @@ export default function HistorySettingsView({
               <div className="flex items-center gap-3">
                 {isLive ? <Pause size={17} className="text-rose-400" /> : <Play size={17} className="text-emerald-400" />}
                 <div className="text-left">
-                  <span className="font-bold text-gray-200 block">Jonli Bozor Oqimi (Live Feed)</span>
-                  <span className="text-[10px] text-gray-500">Real vaqt rejimida shamlarni yangilash</span>
+                  <span className="font-bold text-gray-200 block">Bozor harakati simulyatsiyasi</span>
+                  <span className="text-[10px] text-gray-500">Namunaviy shamlarni avtomatik o'zgartirish</span>
                 </div>
               </div>
               <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${
@@ -152,14 +152,14 @@ export default function HistorySettingsView({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
                 <Smartphone size={16} />
-                <span>Android .APK O'rnatish (4.2 MB)</span>
+                <span>Android .APK O'rnatish</span>
               </div>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
                 Tayyor
               </span>
             </div>
             <p className="text-xs text-gray-300 leading-relaxed mb-3">
-              Ilovaning rasmiy <strong>InvestSignal.apk</strong> fayli loyihaning asosiy papkasida tayyor turibdi. Uni smartfoningizga o'tkazib darhol o'rnatishingiz mumkin.
+              <strong>InvestSignal.apk</strong> faylining hajmi vaqti-vaqti bilan o'zgaradi. Builddan keyin yangilangan nusxa loyiha papkasiga ko'chiriladi.
             </p>
             <button
               onClick={onOpenApkModal}
@@ -178,4 +178,3 @@ export default function HistorySettingsView({
     </div>
   );
 }
-

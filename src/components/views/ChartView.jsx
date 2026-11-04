@@ -19,14 +19,15 @@ export default function ChartView({
   onToggleIndicators,
   onTriggerSignal,
   isScanning,
-  onNavigateToSignals
+  onNavigateToSignals,
+  onOpenMenu
 }) {
   const lastCandle = candles[candles.length - 1] || { close: 100, open: 100, high: 100, low: 100, volume: 0 };
   const isBuy = signal?.action?.includes('BUY');
   const isSell = signal?.action?.includes('SELL');
 
   return (
-    <div className="flex flex-col h-[calc(100vh-125px)] select-none">
+    <div className="flex h-[calc(100dvh-8.5rem)] min-h-[560px] flex-col select-none">
       {/* 1. MT5 Standart Asboblar Paneli */}
       <Mt5TopToolbar
         symbol={asset.symbol}
@@ -42,10 +43,18 @@ export default function ChartView({
         onToggleIndicators={onToggleIndicators}
         onTriggerSignal={onTriggerSignal}
         isScanning={isScanning}
+        onOpenMenu={onOpenMenu}
       />
 
       {/* 2. Asosiy Katta Canvas Grafik (Ekran maydonini to'liq egallaydi) */}
-      <div className="flex-1 w-full min-h-[380px] my-1">
+      <div className="flex min-h-0 w-full flex-1 flex-col">
+        <div className="flex shrink-0 items-center justify-between bg-white px-2 py-1.5">
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-[#2878df]">{asset.symbol} <span className="font-medium text-[#30343a]">· {timeframe}</span></div>
+            <div className="truncate text-xs text-[#555a60]">{asset.name}</div>
+          </div>
+          <div className="ml-3 shrink-0 text-right font-mono text-sm font-medium text-[#41464d]">{lastCandle.close}</div>
+        </div>
         <CandleChart
           candles={candles}
           asset={asset}
@@ -65,10 +74,10 @@ export default function ChartView({
           onClick={onNavigateToSignals}
           className={`px-3 py-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition shadow-lg active:scale-[0.99] ${
             isBuy 
-              ? 'bg-emerald-950/40 border-emerald-500/40 hover:bg-emerald-950/60' 
+              ? 'bg-[#f0f8f5] border-[#b8dccc] hover:bg-[#eaf5f0]' 
               : isSell 
-              ? 'bg-rose-950/40 border-rose-500/40 hover:bg-rose-950/60' 
-              : 'bg-amber-950/30 border-amber-500/30 hover:bg-amber-950/50'
+              ? 'bg-[#fff3f4] border-[#edc4c8] hover:bg-[#ffedef]' 
+              : 'bg-[#fff9ed] border-[#efe0bd] hover:bg-[#fff6e3]'
           }`}
         >
           <div className="flex items-center gap-2 text-xs truncate">
@@ -76,15 +85,15 @@ export default function ChartView({
             {isSell && <TrendingDown size={16} className="text-[#ff3b30] shrink-0" />}
             {!isBuy && !isSell && <MinusCircle size={16} className="text-amber-400 shrink-0" />}
 
-            <span className="font-bold text-white">
+              <span className="font-semibold text-[#30343a]">
               {signal.action === 'STRONG_BUY' ? 'Kuchli Xarid' :
                signal.action === 'BUY' ? 'Xarid Signali' :
                signal.action === 'STRONG_SELL' ? 'Kuchli Sotish' :
                signal.action === 'SELL' ? 'Sotish Signali' : 'Kutish Signali'} ({signal.confidence}%)
             </span>
-            <span className="text-gray-400 hidden sm:inline">•</span>
-            <span className="text-gray-300 font-mono hidden sm:inline">
-              SL: <strong className="text-rose-400">{signal.stopLoss}</strong> | TP: <strong className="text-emerald-400">{signal.takeProfit1}</strong>
+            <span className="text-[#85898e] hidden sm:inline">•</span>
+            <span className="text-[#555a60] font-mono hidden sm:inline">
+              SL: <strong className="text-[#c74752]">{signal.stopLoss}</strong> | TP: <strong className="text-[#12856c]">{signal.takeProfit1}</strong>
             </span>
           </div>
 
@@ -96,13 +105,13 @@ export default function ChartView({
       ) : (
         <div
           onClick={onTriggerSignal}
-          className="px-3 py-2 rounded-xl bg-[#121620] border border-gray-800 flex items-center justify-between cursor-pointer hover:border-gray-700 text-xs"
+          className="px-3 py-2 border border-[#e1e4e8] bg-white flex items-center justify-between cursor-pointer hover:bg-[#f8f9fa] text-xs"
         >
-          <div className="flex items-center gap-2 text-gray-400">
+          <div className="flex items-center gap-2 text-[#666a70]">
             <Sparkles size={14} className="text-yellow-400" />
             <span>AI Tahlil va signal olish uchun bosing</span>
           </div>
-          <span className="text-[#2979ff] font-bold">Signal Olish ➔</span>
+          <span className="text-[#2878df] font-semibold">Signal Olish →</span>
         </div>
       )}
     </div>

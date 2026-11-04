@@ -109,7 +109,7 @@ export default function Mt5SettingsView({
               <span>Android .APK Faylini Yuklab Olish</span>
             </div>
             <span className="text-[10px] font-mono bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
-              4.2 MB
+              Buildga qarab
             </span>
           </button>
         </div>

@@ -29,14 +29,14 @@ export default function ApkExportModal({ isOpen, onClose }) {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
               <CheckCircle size={17} />
-              <span>Tayyor .APK Fayl Kompilyatsiya Qilindi (4.2 MB)</span>
+              <span>Tayyor .APK Fayli</span>
             </div>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               Android v1.0
             </span>
           </div>
           <p className="text-xs text-gray-300 leading-relaxed mb-3">
-            Ilovaning rasmiy <strong>InvestSignal.apk</strong> fayli muvaffaqiyatli tayyorlandi. Uni to'g'ridan-to'g'ri smartfoningizga o'rnatishingiz mumkin:
+            <strong>InvestSignal.apk</strong> faylini smartfoningizga o'rnatishingiz mumkin. Fayl hajmi build turi va tarkibiga qarab o'zgaradi:
           </p>
           <a
             href="/InvestSignal.apk"
@@ -44,7 +44,7 @@ export default function ApkExportModal({ isOpen, onClose }) {
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-xs transition shadow-lg shadow-emerald-500/30"
           >
             <Download size={16} />
-            <span>InvestSignal.apk Faylini Yuklab Olish (4.2 MB)</span>
+            <span>InvestSignal.apk faylini yuklab olish</span>
           </a>
           <p className="text-[10px] text-gray-400 mt-2 text-center">
             Fayl kompyuteringizdagi <code>InvestSignal.apk</code> yoki <code>android/app/build/outputs/apk/debug/app-debug.apk</code> manzilida ham saqlangan.
@@ -71,20 +71,18 @@ export default function ApkExportModal({ isOpen, onClose }) {
         <div className="bg-[#1e293b]/60 border border-gray-800 rounded-2xl p-4 mb-4">
           <div className="flex items-center gap-2 mb-2 text-indigo-400 font-bold text-sm">
             <Terminal size={16} />
-            <span>2-usul: Rasmiy .APK Faylni Kompilyatsiya Qilish (Capacitor / Android Studio)</span>
+            <span>2-usul: APK faylni qayta yig'ish</span>
           </div>
           <p className="text-xs text-gray-300 leading-relaxed mb-3">
-            Loyiha papkasida to'liq Android Studio va Capacitor konfiguratsiyasi tayyorlangan. Kompyuteringizda to'g'ridan-to'g'ri .apk yig'ish buyruqlari:
+            Windows'da loyiha papkasidan quyidagi skriptni ishga tushiring. U web resurslarni yig'adi, Android loyihasiga nusxalaydi va yangi debug APK yaratadi:
           </p>
 
           <div className="bg-[#0b0f19] p-3 rounded-xl border border-gray-800 font-mono text-xs text-emerald-400 space-y-1 overflow-x-auto mb-3">
-            <div>npm run build</div>
-            <div>npx cap add android</div>
-            <div>npx cap open android</div>
+            <div>build-apk.bat</div>
           </div>
 
           <p className="text-[11px] text-gray-400">
-            Android Studio ochilgach: <strong>Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong> menyusini bossangiz, tayyor <code>app-debug.apk</code> yoki <code>app-release.apk</code> fayli hosil bo'ladi.
+            Natija: <code>android/app/build/outputs/apk/debug/app-debug.apk</code>. Skript shu faylni loyiha papkasidagi <code>InvestSignal.apk</code> ustiga yangidan ko'chiradi.
           </p>
         </div>
 

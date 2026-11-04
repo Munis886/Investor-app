@@ -5,42 +5,42 @@ import ChartView from './components/views/ChartView';
 import SignalsView from './components/views/SignalsView';
 import TradeView from './components/views/TradeView';
 import HistorySettingsView from './components/views/HistorySettingsView';
+import Mt5HistoryView from './components/mt5/Mt5HistoryView';
+import MessagesView from './components/mt5/MessagesView';
+import NavigationMenu from './components/NavigationMenu';
 import CsvUploaderModal from './components/CsvUploaderModal';
 import ManualCandleModal from './components/ManualCandleModal';
 import ApkExportModal from './components/ApkExportModal';
-import { ASSETS, getInitialAssetData, simulateNextCandle } from './utils/sampleData';
+import { ASSETS, getAssetById, getInitialAssetData, simulateNextCandle } from './utils/sampleData';
 import { analyzeMarket } from './utils/signalEngine';
+import { Menu } from 'lucide-react';
 
 export default function App() {
   // 5 ta Asosiy Bo'lim: 'QUOTES' | 'CHART' | 'SIGNALS' | 'TRADE' | 'SETTINGS'
   const [activeTab, setActiveTab] = useState('CHART');
-  const [selectedAssetId, setSelectedAssetId] = useState('BTC_USDT');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState('EUR_USD');
   const [customAssetName, setCustomAssetName] = useState(null);
-  const [timeframe, setTimeframe] = useState('H1');
+  const [timeframe, setTimeframe] = useState('M5');
   const [chartType, setChartType] = useState('CANDLES'); // 'CANDLES' | 'BARS' | 'LINE'
   
   // MT5 Grafik Asboblari
   const [isCrosshairActive, setIsCrosshairActive] = useState(false);
-  const [showOneClick, setShowOneClick] = useState(true);
+  const [showOneClick, setShowOneClick] = useState(false);
   const [showIndicators, setShowIndicators] = useState(true);
   
   // Bozor ma'lumotlari
-  const [candles, setCandles] = useState(() => getInitialAssetData('BTC_USDT'));
+  const [marketData, setMarketData] = useState(() =>
+    Object.fromEntries(ASSETS.map(asset => [asset.id, getInitialAssetData(asset.id)]))
+  );
+  const [customCandles, setCustomCandles] = useState([]);
   const [isLive, setIsLive] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
   // Savdo portfeli va hisob balansi
-  const [balance, setBalance] = useState(10000.00);
-  const [openOrders, setOpenOrders] = useState([
-    {
-      id: 101,
-      symbol: 'BTC/USDT',
-      type: 'BUY',
-      lot: 0.10,
-      entryPrice: 87100.00,
-      time: '14:20'
-    }
-  ]);
+  const [balance, setBalance] = useState(100000.00);
+  const [openOrders, setOpenOrders] = useState([]);
+  const [closedOrders, setClosedOrders] = useState([]);
 
   // Modallar
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
@@ -58,26 +58,39 @@ export default function App() {
         volatility: 0.015
       };
     }
-    return ASSETS.find(a => a.id === selectedAssetId) || ASSETS[0];
+    return getAssetById(selectedAssetId) || ASSETS[0];
   }, [selectedAssetId, customAssetName]);
+
+  const candles = selectedAssetId === 'CUSTOM'
+    ? customCandles
+    : marketData[selectedAssetId] || marketData[ASSETS[0].id];
 
   // Aktiv tanlanganda (Kotirovkalar bo'limidan)
   const handleSelectAsset = (assetId) => {
     setSelectedAssetId(assetId);
     if (assetId !== 'CUSTOM') {
-      setCandles(getInitialAssetData(assetId));
+      setMarketData(previous => previous[assetId]
+        ? previous
+        : { ...previous, [assetId]: getInitialAssetData(assetId) });
     }
+    if (assetId === 'CUSTOM') setIsLive(false);
     setActiveTab('CHART'); // Avtomatik tarzda grafik ochiladi
   };
 
   // Jonli bozor tebranishi
   useEffect(() => {
-    if (!isLive) return;
+    if (!isLive || selectedAssetId === 'CUSTOM') return;
+    const asset = getAssetById(selectedAssetId);
+    if (!asset) return;
+
     const interval = setInterval(() => {
-      setCandles(prev => simulateNextCandle(prev, 0.006));
+      setMarketData(previous => ({
+        ...previous,
+        [selectedAssetId]: simulateNextCandle(previous[selectedAssetId], asset.volatility, asset.precision || 2)
+      }));
     }, 2000);
     return () => clearInterval(interval);
-  }, [isLive]);
+  }, [isLive, selectedAssetId]);
 
   // Bozor tahlili va signallar
   const signal = useMemo(() => {
@@ -112,6 +125,8 @@ export default function App() {
 
   // Pozitsiyani yopish
   const handleCloseOrder = (orderId, pnl) => {
+    const closedOrder = openOrders.find(order => order.id === orderId);
+    if (closedOrder) setClosedOrders(previous => [{ ...closedOrder, pnl, closedAt: new Date().toLocaleTimeString().slice(0, 5) }, ...previous]);
     setOpenOrders(prev => prev.filter(o => o.id !== orderId));
     setBalance(prev => Number((prev + pnl).toFixed(2)));
   };
@@ -120,7 +135,7 @@ export default function App() {
   const handleCustomDataLoaded = (newCandles, assetName) => {
     setCustomAssetName(assetName);
     setSelectedAssetId('CUSTOM');
-    setCandles(newCandles);
+    setCustomCandles(newCandles);
     setIsLive(false);
     setActiveTab('CHART');
     handleTriggerSignal();
@@ -128,30 +143,65 @@ export default function App() {
 
   // Qo'lda yangi sham qo'shilganda
   const handleAddCandle = (newCandle) => {
-    setCandles(prev => [...prev.slice(-85), newCandle]);
+    if (selectedAssetId === 'CUSTOM') {
+      setCustomCandles(previous => [...previous.slice(-85), newCandle]);
+    } else {
+      setMarketData(previous => ({
+        ...previous,
+        [selectedAssetId]: [...(previous[selectedAssetId] || []).slice(-85), newCandle]
+      }));
+    }
     handleTriggerSignal();
   };
 
   // Qayta tiklash
   const handleRefresh = () => {
     if (selectedAssetId !== 'CUSTOM') {
-      setCandles(getInitialAssetData(selectedAssetId));
+      setMarketData(previous => ({
+        ...previous,
+        [selectedAssetId]: getInitialAssetData(selectedAssetId)
+      }));
       handleTriggerSignal();
     }
   };
 
   const lastCandle = candles[candles.length - 1] || { close: 100, open: 100, high: 100, low: 100, volume: 0 };
+  const screenTitles = {
+    QUOTES: 'Kotirovkalar',
+    TRADE: 'Savdo',
+    HISTORY: 'Tarix',
+    MESSAGES: 'Xabarlar',
+    SIGNALS: 'Signallar',
+    SETTINGS: 'Sozlamalar'
+  };
 
   return (
-    <div className="min-h-screen bg-[#06080d] text-gray-100 flex flex-col font-sans pb-14 select-none">
+    <div className="min-h-[100dvh] bg-white text-[#202124] flex flex-col font-sans pb-[calc(4.5rem+env(safe-area-inset-bottom))] select-none">
+      {activeTab !== 'CHART' && (
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-4 border-b border-[#e5e7eb] bg-white px-4 pt-[env(safe-area-inset-top)]">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            aria-label="Menyuni ochish"
+            className="grid size-10 shrink-0 place-items-center text-[#4c5158]"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="min-w-0 flex-1 text-[17px] font-medium text-[#22252a]">{screenTitles[activeTab]}</h1>
+        </header>
+      )}
+
       {/* Asosiy Ishchi Maydon */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-3">
+      <main className={`flex-1 w-full mx-auto ${activeTab === 'CHART' ? 'max-w-7xl p-0' : 'max-w-7xl p-2 sm:p-3'}`}>
         {/* 1-BO'LIM: KOTIROVKALAR (Bozor Monitoringi & Toifali Saralash) */}
         {activeTab === 'QUOTES' && (
           <QuotesView
             selectedAssetId={selectedAssetId}
             onSelectAsset={handleSelectAsset}
             customAssetName={customAssetName}
+            marketData={marketData}
+            customCandles={customCandles}
+            onOpenCsvModal={() => setIsCsvModalOpen(true)}
           />
         )}
 
@@ -175,6 +225,7 @@ export default function App() {
             isScanning={isScanning}
             onNavigateToSignals={() => setActiveTab('SIGNALS')}
             onQuickTrade={handleQuickTrade}
+            onOpenMenu={() => setIsMenuOpen(true)}
           />
         )}
 
@@ -204,6 +255,17 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'HISTORY' && (
+          <Mt5HistoryView
+            openOrders={openOrders}
+            closedOrders={closedOrders}
+            balance={balance}
+            onNavigateToTrade={() => setActiveTab('TRADE')}
+          />
+        )}
+
+        {activeTab === 'MESSAGES' && <MessagesView />}
+
         {/* 5-BO'LIM: STATISTIKA, TARIX VA SOZLAMALAR */}
         {activeTab === 'SETTINGS' && (
           <HistorySettingsView
@@ -223,6 +285,21 @@ export default function App() {
       <Mt5BottomNav
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        balance={balance}
+      />
+
+      <NavigationMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        isLive={isLive}
+        onToggleLive={() => setIsLive(!isLive)}
+        onOpenCsvModal={() => setIsCsvModalOpen(true)}
+        onOpenManualModal={() => setIsManualModalOpen(true)}
+        onOpenApkModal={() => setIsApkModalOpen(true)}
+        onRefreshData={handleRefresh}
+        onTriggerSignal={handleTriggerSignal}
       />
 
       {/* Modallar */}

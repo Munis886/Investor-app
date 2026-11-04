@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, PlusCircle, Sparkles } from 'lucide-react';
 
 export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCandle }) {
@@ -7,23 +7,53 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
   const [low, setLow] = useState(lastCandle?.close ? lastCandle.close * 0.98 : 98);
   const [close, setClose] = useState(lastCandle?.close ? lastCandle.close * 1.01 : 101);
   const [volume, setVolume] = useState(5000);
+  const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const price = lastCandle?.close || 100;
+    setOpen(price);
+    setHigh(price * 1.02);
+    setLow(price * 0.98);
+    setClose(price * 1.01);
+    setVolume(5000);
+    setValidationError('');
+  }, [isOpen, lastCandle?.close]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const values = [open, high, low, close].map(Number);
+    const [openPrice, highPrice, lowPrice, closePrice] = values;
+    const volumeValue = Number(volume);
+
+    if (!values.every(value => Number.isFinite(value) && value > 0)) {
+      setValidationError("Narxlar musbat va to'g'ri son bo'lishi kerak.");
+      return;
+    }
+    if (highPrice < Math.max(openPrice, closePrice) || lowPrice > Math.min(openPrice, closePrice)) {
+      setValidationError("Eng yuqori narx Open va Close'dan kam, eng past narx esa ulardan yuqori bo'lishi mumkin emas.");
+      return;
+    }
+    if (!Number.isInteger(volumeValue) || volumeValue < 0) {
+      setValidationError("Savdo hajmi manfiy bo'lmagan butun son bo'lishi kerak.");
+      return;
+    }
+
     const now = new Date();
     const timeStr = now.toISOString().replace('T', ' ').slice(0, 16);
 
     const candle = {
       time: timeStr,
-      open: parseFloat(open),
-      high: parseFloat(high),
-      low: parseFloat(low),
-      close: parseFloat(close),
-      volume: parseInt(volume, 10) || 1000
+      open: openPrice,
+      high: highPrice,
+      low: lowPrice,
+      close: closePrice,
+      volume: volumeValue
     };
 
+    setValidationError('');
     onAddCandle(candle);
     onClose();
   };
@@ -55,6 +85,7 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
               <input
                 type="number"
                 step="any"
+                min="0"
                 value={open}
                 onChange={(e) => setOpen(e.target.value)}
                 className="w-full bg-[#0b0f19] border border-gray-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
@@ -66,6 +97,7 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
               <input
                 type="number"
                 step="any"
+                min="0"
                 value={close}
                 onChange={(e) => setClose(e.target.value)}
                 className="w-full bg-[#0b0f19] border border-gray-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
@@ -80,6 +112,7 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
               <input
                 type="number"
                 step="any"
+                min="0"
                 value={high}
                 onChange={(e) => setHigh(e.target.value)}
                 className="w-full bg-[#0b0f19] border border-gray-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
@@ -91,6 +124,7 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
               <input
                 type="number"
                 step="any"
+                min="0"
                 value={low}
                 onChange={(e) => setLow(e.target.value)}
                 className="w-full bg-[#0b0f19] border border-gray-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
@@ -103,12 +137,20 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
             <label className="text-xs text-gray-400 mb-1 block">Savdo Hajmi (Volume)</label>
             <input
               type="number"
+              min="0"
+              step="1"
               value={volume}
               onChange={(e) => setVolume(e.target.value)}
               className="w-full bg-[#0b0f19] border border-gray-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
               required
             />
           </div>
+
+          {validationError && (
+            <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+              {validationError}
+            </p>
+          )}
 
           <div className="flex items-center justify-end gap-2.5 pt-2">
             <button
@@ -131,4 +173,3 @@ export default function ManualCandleModal({ isOpen, onClose, onAddCandle, lastCa
     </div>
   );
 }
-

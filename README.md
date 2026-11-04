@@ -4,15 +4,23 @@ Investitsiya va treyding uchun istalgan turdagi moliyaviy va statistik ma'lumotl
 
 ---
 
-## 📱 Tayyor .APK Fayli
+## 📱 Android APK yig'ish
 
-Loyiha muvaffaqiyatli Android platformasiga kompilyatsiya qilingan va tayyor `.apk` fayli yaratilgan:
+Windows'da loyiha papkasidan `build-apk.bat` ishga tushiriladi. Skript web qismini build qiladi, Capacitor orqali Android resurslarini yangilaydi, Gradle bilan debug APK yig'adi va yangisini `InvestSignal.apk` nomi bilan loyiha papkasiga ko'chiradi.
 
-- **Asosiy papkada:** `InvestSignal.apk` (Hajmi: ~4.2 MB)
-- **Android Studio build papkasida:** `android/app/build/outputs/apk/debug/app-debug.apk`
+APK hajmi build turi, Android kutubxonalari va web resurslariga qarab o'zgaradi. README yoki ilova oynasidagi eski hajm raqamiga emas, build tugagandan keyingi faylga qarang. Joriy build natijasi `android/app/build/outputs/apk/debug/app-debug.apk` manzilida bo'ladi.
+
+### Hajm kamayishi kod o'chirilganini anglatadimi?
+
+- `build-apk.bat` faqat Gradle yaratgan `build` chiqish papkalarini tozalaydi; `src`, Android manba kodi yoki maxsus funksiyalarni o'chirmaydi.
+- `npm run build` Vite orqali JavaScript/CSS ni bitta optimallashtirilgan web resursga yig'adi. Izohlar, ortiqcha bo'shliqlar va ishlatilmayotgan kod qismlari kichrayishi mumkin; kerakli ishlatiladigan funksiyalar bundle tarkibida qoladi.
+- Android release sozlamasida `minifyEnabled false` va `shrinkResources false`, shuning uchun R8 kodni kichraytirish va resurslarni olib tashlash o'chirilgan. Joriy skript esa `assembleDebug` ishlatadi.
+- `InvestSignal.apk` va `app-debug.apk` hajmi yoki sanasi farq qilsa, root papkadagi nusxa eskirgan bo'lishi mumkin. Skriptni qayta ishga tushirib, yangidan ko'chirilgan APK'dan foydalaning.
+
+Ilovaning asosiy manba kodi `src/` papkasida. `dist/` va `android/app/src/main/assets/public/` avtomatik yaratiladigan build fayllari; ularni qo'lda tahrirlamang.
 
 ### Smartfonga o'rnatish:
-1. `InvestSignal.apk` faylini smartfoningizga (Telegram, USB yoki Drive orqali) o'tkazing.
+1. `build-apk.bat` muvaffaqiyatli tugagach, `InvestSignal.apk` faylini smartfoningizga (Telegram, USB yoki Drive orqali) o'tkazing.
 2. Faylni oching va "O'rnatish" (Install) tugmasini bosing.
 3. Ilova to'liq mustaqil (oflayn) rejimda ishlaydi.
 

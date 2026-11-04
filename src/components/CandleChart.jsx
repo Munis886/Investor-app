@@ -24,6 +24,7 @@ export default function CandleChart({
   const [hoverData, setHoverData] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   // Indikatorlar hisobi
   const ema20 = useMemo(() => calculateEMA(candles, 20), [candles]);
@@ -47,8 +48,8 @@ export default function CandleChart({
     // Tozalash
     ctx.clearRect(0, 0, width, height);
 
-    // MT5 Toza Qora Fon
-    ctx.fillStyle = '#05070b';
+    // Keep the chart canvas aligned with the light mobile trading layout.
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     // Ko'rinadigan shamlar oralig'i
@@ -96,12 +97,12 @@ export default function CandleChart({
     const getY = (price) => chartBottom - ((price - minPrice) / priceRange) * chartHeight;
 
     // 1. MT5 Nozik Grid (To'r chiziqlari)
-    ctx.strokeStyle = '#141a24';
+    ctx.strokeStyle = '#e1e4e8';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 4]);
 
     const gridSteps = 6;
-    ctx.fillStyle = '#788294';
+    ctx.fillStyle = '#73777e';
     ctx.font = '10px "Roboto Mono", monospace';
     ctx.textAlign = 'left';
 
@@ -194,7 +195,7 @@ export default function CandleChart({
     // 4. MT5 Grafikasini Chizish (Candles / Bars / Line)
     if (chartType === 'LINE') {
       // Line Chart (MT5 Chiziqli rejim)
-      ctx.strokeStyle = '#00e676';
+      ctx.strokeStyle = '#35a596';
       ctx.lineWidth = 2;
       ctx.beginPath();
       visibleCandles.forEach((c, i) => {
@@ -208,7 +209,7 @@ export default function CandleChart({
       visibleCandles.forEach((c, i) => {
         const x = getX(i);
         const isUp = c.close >= c.open;
-        const color = isUp ? '#00e676' : '#ff3b30';
+        const color = isUp ? '#35a596' : '#d85a64';
 
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.5;
@@ -236,7 +237,7 @@ export default function CandleChart({
       visibleCandles.forEach((c, i) => {
         const x = getX(i);
         const isUp = c.close >= c.open;
-        const color = isUp ? '#00e676' : '#ff3b30';
+        const color = isUp ? '#35a596' : '#d85a64';
 
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
@@ -261,7 +262,7 @@ export default function CandleChart({
     // 5. EMA 20 (Sariq) va EMA 50 (Moviy)
     if (showIndicators) {
       // EMA 20
-      ctx.strokeStyle = '#ffd600';
+      ctx.strokeStyle = '#c28a00';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       let started = false;
@@ -294,7 +295,7 @@ export default function CandleChart({
     // 6. MT5 ASK va BID Gorizontal Chiziqlari (Klassik MT5!)
     // Bid Line (Ko'k yoki Kulrang)
     const bidY = getY(bidPrice);
-    ctx.strokeStyle = '#2979ff';
+    ctx.strokeStyle = '#35a596';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -304,7 +305,7 @@ export default function CandleChart({
 
     // Ask Line (Qizil)
     const askY = getY(askPrice);
-    ctx.strokeStyle = '#ff3b30';
+    ctx.strokeStyle = '#d85a64';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, askY);
@@ -314,7 +315,7 @@ export default function CandleChart({
 
     // MT5 Narx Yorliqlari (O'ng shkalada)
     // Bid badge
-    ctx.fillStyle = '#2979ff';
+    ctx.fillStyle = '#35a596';
     ctx.fillRect(chartWidth + 2, bidY - 8, rightMargin - 4, 16);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 10px "Roboto Mono", monospace';
@@ -344,7 +345,7 @@ export default function CandleChart({
       const hx = hoverData.x;
       const hy = hoverData.y;
 
-      ctx.strokeStyle = '#ffffff';
+      ctx.strokeStyle = '#6f7780';
       ctx.lineWidth = 0.8;
       ctx.setLineDash([4, 4]);
 
@@ -363,22 +364,25 @@ export default function CandleChart({
 
       // Crosshair narx ko'rsatkichi
       const hoverPrice = maxPrice - ((hy - chartTop) / chartHeight) * priceRange;
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#f1f3f5';
       ctx.fillRect(chartWidth + 2, hy - 8, rightMargin - 4, 16);
       ctx.fillStyle = '#000000';
       ctx.font = 'bold 9px "Roboto Mono", monospace';
       ctx.fillText(hoverPrice >= 1000 ? hoverPrice.toFixed(1) : hoverPrice.toFixed(3), chartWidth + (rightMargin / 2), hy + 3.5);
     }
 
-  }, [candles, visibleCount, offset, showIndicators, chartType, isCrosshairActive, hoverData, ema20, ema50, bb, bidPrice, askPrice]);
+  }, [candles, visibleCount, offset, showIndicators, chartType, isCrosshairActive, hoverData, ema20, ema50, bb, bidPrice, askPrice, canvasSize]);
 
   // Avtomatik Canvas o'lchamini moslash
   useEffect(() => {
     function handleResize() {
       if (!containerRef.current || !canvasRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      canvasRef.current.width = rect.width;
-      canvasRef.current.height = Math.max(380, rect.height);
+      const width = Math.round(rect.width);
+      const height = Math.max(380, Math.round(rect.height));
+      if (canvasRef.current.width !== width) canvasRef.current.width = width;
+      if (canvasRef.current.height !== height) canvasRef.current.height = height;
+      setCanvasSize(previous => previous.width === width && previous.height === height ? previous : { width, height });
     }
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -436,15 +440,15 @@ export default function CandleChart({
   const currentHoverCandle = hoverData?.candle || lastCandle;
 
   return (
-    <div className="relative w-full bg-[#05070b] border border-gray-800/80 rounded-xl overflow-hidden shadow-2xl select-none">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden border border-[#dfe2e6] bg-white select-none">
       {/* 1. MT5 OHLCV Ko'rsatkichi (Grafikning eng yuqori qismida, MT5 dagi kabi) */}
-      <div className="px-3 py-1 bg-[#090d14] border-b border-gray-800/60 flex flex-wrap items-center justify-between text-[11px] font-mono text-gray-400">
+      <div className="px-2 py-1 bg-white border-b border-[#e6e8eb] flex flex-wrap items-center justify-between text-[10px] font-mono text-[#777b80]">
         <div className="flex items-center gap-3">
-          <span className="text-gray-300 font-bold">{currentHoverCandle.time}</span>
-          <span>O: <strong className="text-gray-200">{currentHoverCandle.open}</strong></span>
-          <span>H: <strong className="text-[#00e676]">{currentHoverCandle.high}</strong></span>
-          <span>L: <strong className="text-[#ff3b30]">{currentHoverCandle.low}</strong></span>
-          <span>C: <strong className={currentHoverCandle.close >= currentHoverCandle.open ? 'text-[#00e676]' : 'text-[#ff3b30]'}>{currentHoverCandle.close}</strong></span>
+          <span className="text-[#555a60] font-semibold">{currentHoverCandle.time}</span>
+          <span>O: <strong className="text-[#30343a]">{currentHoverCandle.open}</strong></span>
+          <span>H: <strong className="text-[#12856c]">{currentHoverCandle.high}</strong></span>
+          <span>L: <strong className="text-[#c74752]">{currentHoverCandle.low}</strong></span>
+          <span>C: <strong className={currentHoverCandle.close >= currentHoverCandle.open ? 'text-[#12856c]' : 'text-[#c74752]'}>{currentHoverCandle.close}</strong></span>
         </div>
 
         {/* Indikatorlar yozuvi */}
@@ -470,24 +474,24 @@ export default function CandleChart({
       )}
 
       {/* 3. MT5 Grafik Ostidagi Kichik Asboblar (Zoom +, Zoom -, Reset) */}
-      <div className="absolute bottom-10 right-20 z-20 flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-lg border border-gray-800">
+      <div className="absolute bottom-10 right-20 z-20 flex items-center gap-1 border border-[#dfe2e6] bg-white/95 p-1">
         <button
           onClick={() => setVisibleCount((prev) => Math.max(15, prev - 10))}
-          className="p-1 rounded bg-gray-800/80 hover:bg-gray-700 text-gray-300"
+          className="grid size-7 place-items-center text-[#555a60] hover:bg-[#f0f1f3]"
           title="Zoom In"
         >
           <ZoomIn size={13} />
         </button>
         <button
           onClick={() => setVisibleCount((prev) => Math.min(100, prev + 10))}
-          className="p-1 rounded bg-gray-800/80 hover:bg-gray-700 text-gray-300"
+          className="grid size-7 place-items-center text-[#555a60] hover:bg-[#f0f1f3]"
           title="Zoom Out"
         >
           <ZoomOut size={13} />
         </button>
         <button
           onClick={() => { setOffset(0); setVisibleCount(50); }}
-          className="p-1 rounded bg-gray-800/80 hover:bg-gray-700 text-gray-300"
+          className="grid size-7 place-items-center text-[#555a60] hover:bg-[#f0f1f3]"
           title="Reset"
         >
           <RotateCcw size={13} />
@@ -497,7 +501,7 @@ export default function CandleChart({
       {/* 4. Canvas Grafik Maydoni */}
       <div
         ref={containerRef}
-        className={`w-full h-[400px] sm:h-[460px] relative touch-none ${isCrosshairActive ? 'cursor-crosshair' : 'cursor-grab'}`}
+        className={`relative w-full min-h-0 flex-1 touch-none ${isCrosshairActive ? 'cursor-crosshair' : 'cursor-grab'}`}
         onMouseDown={handlePointerDown}
         onMouseMove={handlePointerMove}
         onMouseUp={handlePointerUp}

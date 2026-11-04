@@ -2,40 +2,47 @@ import React from 'react';
 import { 
   ArrowLeftRight, 
   CandlestickChart, 
-  Zap, 
-  Briefcase, 
-  Settings2 
+  Activity,
+  History,
+  MessageSquare
 } from 'lucide-react';
 
-export default function Mt5BottomNav({ activeTab, onSelectTab }) {
+export default function Mt5BottomNav({ activeTab, onSelectTab, balance = 100000 }) {
   const tabs = [
     { id: 'QUOTES', label: 'Kotirovkalar', icon: ArrowLeftRight },
     { id: 'CHART', label: 'Grafik', icon: CandlestickChart },
-    { id: 'SIGNALS', label: 'Signallar', icon: Zap },
-    { id: 'TRADE', label: 'Savdo', icon: Briefcase },
-    { id: 'SETTINGS', label: 'Sozlamalar', icon: Settings2 },
+    { id: 'TRADE', label: 'Savdo', icon: Activity },
+    { id: 'HISTORY', label: 'Tarix', icon: History },
+    { id: 'MESSAGES', label: 'Xabarlar', icon: MessageSquare },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0d1117]/95 border-t border-gray-800/80 px-2 py-1 shadow-2xl backdrop-blur-md select-none">
-      <div className="max-w-lg mx-auto flex items-center justify-around">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e1e3e6] bg-white px-1 pb-[env(safe-area-inset-bottom)] select-none">
+      <div className="mx-auto grid h-[68px] max-w-xl grid-cols-5 items-center">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+          const isActive = tab.id === 'CHART'
+            ? activeTab === 'CHART' || activeTab === 'SIGNALS'
+            : activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => onSelectTab(tab.id)}
-              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
-                isActive 
-                  ? 'text-[#2979ff] font-bold scale-105' 
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
+              aria-label={tab.id === 'TRADE' ? 'Savdo' : tab.label}
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex h-full min-w-0 flex-col items-center justify-center gap-1 transition-colors ${isActive ? 'text-[#2878df]' : 'text-[#55585d]'}`}
             >
-              <Icon size={19} className={isActive ? 'stroke-[2.5]' : 'stroke-[1.8]'} />
-              <span className="text-[10px] mt-0.5 tracking-tight font-semibold">
-                {tab.label}
-              </span>
+              <Icon size={23} strokeWidth={isActive ? 2.5 : 2} />
+              {tab.id === 'TRADE' ? (
+                <span className="rounded-full bg-[#f0f1f3] px-3 py-0.5 text-[11px] font-semibold leading-none text-[#60636a]">
+                  {Math.round(balance / 1000)}K
+                </span>
+              ) : (
+                <span className={`max-w-full truncate text-[10px] leading-none ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                  {tab.label}
+                </span>
+              )}
             </button>
           );
         })}

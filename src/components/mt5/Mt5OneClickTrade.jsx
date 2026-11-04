@@ -28,26 +28,26 @@ export default function Mt5OneClickTrade({
   };
 
   return (
-    <div className="absolute top-2.5 left-2.5 z-30 flex items-stretch bg-[#10141d]/95 backdrop-blur-md border border-gray-700/80 rounded-xl shadow-2xl overflow-hidden font-mono select-none">
+    <div className="absolute top-2.5 left-2.5 z-30 flex items-stretch overflow-hidden border border-[#dfe2e6] bg-white/95 font-mono shadow-md select-none">
       {/* SELL bloki (MT5 Qizil tugma) */}
       <button
         onClick={handleSell}
-        className="px-3 py-1.5 flex flex-col items-center justify-center bg-rose-700/60 hover:bg-rose-600 text-white border-r border-gray-700/80 transition active:scale-95"
+        className="flex flex-col items-center justify-center border-r border-[#e1e4e8] bg-[#fff3f4] px-3 py-1.5 text-[#c74752] transition active:opacity-80"
         title="Tezkor SELL ochish"
       >
-        <span className="text-[10px] font-sans font-bold flex items-center gap-0.5 text-rose-300">
+        <span className="text-[10px] font-sans font-semibold flex items-center gap-0.5 text-[#c74752]">
           <ArrowDown size={11} />
           SELL
         </span>
-        <span className="text-xs sm:text-sm font-black tracking-tight">
+        <span className="text-xs sm:text-sm font-semibold tracking-tight">
           {formatPrice(bidPrice)}
         </span>
       </button>
 
       {/* Markaz: Lot hajmi (aniq va tushunarli) */}
-      <div className="px-2 py-1 flex flex-col items-center justify-center bg-[#171c26] min-w-[70px]">
-        <div className="text-[9px] text-gray-400 font-sans uppercase">
-          Spred: <strong className="text-gray-200">{spread}</strong>
+      <div className="flex min-w-[70px] flex-col items-center justify-center bg-white px-2 py-1">
+        <div className="text-[9px] text-[#777b80] font-sans uppercase">
+          Spred: <strong className="text-[#30343a]">{spread}</strong>
         </div>
         
         {/* Lot kiritish maydoni */}
@@ -58,14 +58,14 @@ export default function Mt5OneClickTrade({
           max="10.0"
           value={lot}
           onChange={(e) => setLot(e.target.value)}
-          className="w-12 text-center bg-black/50 border border-gray-700 rounded text-xs font-bold text-yellow-400 focus:outline-none focus:border-[#2979ff] my-0.5"
+          className="my-0.5 w-12 border-b border-[#dfe2e6] bg-white text-center text-xs font-semibold text-[#30343a] focus:border-[#2878df] focus:outline-none"
           title="Savdo lot hajmi"
         />
 
         <button
           onClick={(e) => { e.stopPropagation(); onTriggerSignal(); }}
           disabled={isScanning}
-          className="text-[9px] font-sans font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5"
+          className="text-[9px] font-sans font-semibold text-[#2878df] hover:text-[#195fae] flex items-center gap-0.5"
           title="Bozordan signal olish"
         >
           <Zap size={9} className="text-yellow-400 fill-yellow-400" />
@@ -76,14 +76,14 @@ export default function Mt5OneClickTrade({
       {/* BUY bloki (MT5 Moviy/Ko'k tugma) */}
       <button
         onClick={handleBuy}
-        className="px-3 py-1.5 flex flex-col items-center justify-center bg-[#2979ff]/70 hover:bg-[#2979ff] text-white border-l border-gray-700/80 transition active:scale-95"
+        className="flex flex-col items-center justify-center border-l border-[#e1e4e8] bg-[#eaf2ff] px-3 py-1.5 text-[#2878df] transition active:opacity-80"
         title="Tezkor BUY ochish"
       >
-        <span className="text-[10px] font-sans font-bold flex items-center gap-0.5 text-blue-200">
+        <span className="text-[10px] font-sans font-semibold flex items-center gap-0.5 text-[#2878df]">
           <ArrowUp size={11} />
           BUY
         </span>
-        <span className="text-xs sm:text-sm font-black tracking-tight">
+        <span className="text-xs sm:text-sm font-semibold tracking-tight">
           {formatPrice(askPrice)}
         </span>
       </button>

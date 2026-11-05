@@ -8,7 +8,8 @@ function SymbolRow({ asset, selected, onAdd }) {
       <div className="min-w-0">
         <div className="text-sm font-medium text-[#22252a]">{asset.symbol}</div>
         <div className="truncate text-xs text-[#777b80]">
-          {asset.name}{asset.isDemo ? ' · Namuna ma’lumoti' : ''}
+          {asset.name} · {asset.basePrice.toLocaleString('en-US', { maximumFractionDigits: asset.precision ?? 2 })} {asset.unit}
+          {asset.peRatio ? ` · P/E ${asset.peRatio}` : ''}
         </div>
       </div>
       <button

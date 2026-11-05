@@ -33,16 +33,18 @@ export default function QuotesView({
 }) {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default');
   const [managerMode, setManagerMode] = useState(null);
   const [removalSelection, setRemovalSelection] = useState([]);
   const [watchlistIds, setWatchlistIds] = useState(() => {
-    const defaultIds = ASSETS.map(asset => asset.id);
+    const defaultIds = ['BTC_USDT', 'ETH_USDT', 'XAU_USD', 'EUR_USD', 'AAPL', 'TSLA', 'UZSE_OKMK', 'UZSE_HMKB'];
     try {
-      const saved = window.localStorage.getItem('investor-quotes-watchlist');
-      if (!saved) return defaultIds;
-      const parsed = JSON.parse(saved);
+      const saved = window.localStorage.getItem('investor-quotes-watchlist-v2');
+      const legacySaved = saved ? null : window.localStorage.getItem('investor-quotes-watchlist');
+      if (!saved && !legacySaved) return defaultIds;
+      const parsed = JSON.parse(saved || legacySaved);
       if (Array.isArray(parsed) && parsed.every(id => typeof id === 'string')) {
-        return [...new Set(parsed)];
+        return saved ? [...new Set(parsed)] : [...new Set([...defaultIds, ...parsed])];
       }
       console.warn('Kotirovkalar ro‘yxati noto‘g‘ri formatda, boshlang‘ich ro‘yxat ishlatildi.');
     } catch (error) {
@@ -53,7 +55,7 @@ export default function QuotesView({
 
   useEffect(() => {
     try {
-      window.localStorage.setItem('investor-quotes-watchlist', JSON.stringify(watchlistIds));
+      window.localStorage.setItem('investor-quotes-watchlist-v2', JSON.stringify(watchlistIds));
     } catch (error) {
       console.error('Kotirovkalar ro‘yxatini saqlab bo‘lmadi.', error);
     }
@@ -68,6 +70,21 @@ export default function QuotesView({
       asset.symbol.toLowerCase().includes(normalizedQuery);
     return matchesCategory && matchesSearch;
   });
+  if (sortBy === 'price-asc') {
+    filteredAssets.sort((first, second) =>
+      (marketData[first.id]?.at(-1)?.close ?? first.basePrice) -
+      (marketData[second.id]?.at(-1)?.close ?? second.basePrice)
+    );
+  } else if (sortBy === 'price-desc') {
+    filteredAssets.sort((first, second) =>
+      (marketData[second.id]?.at(-1)?.close ?? second.basePrice) -
+      (marketData[first.id]?.at(-1)?.close ?? first.basePrice)
+    );
+  } else if (sortBy === 'pe-asc') {
+    filteredAssets.sort((first, second) =>
+      (first.peRatio ?? Number.POSITIVE_INFINITY) - (second.peRatio ?? Number.POSITIVE_INFINITY)
+    );
+  }
   const managerAssets = selectedAssets.filter(asset =>
     selectedCategory === 'ALL' || asset.category === selectedCategory
   );
@@ -186,6 +203,21 @@ export default function QuotesView({
         ))}
       </div>
 
+      <div className="flex items-center justify-between gap-3">
+        <span className="shrink-0 text-xs text-[#777b80]">Saralash:</span>
+        <select
+          value={sortBy}
+          onChange={event => setSortBy(event.target.value)}
+          aria-label="Aktivlarni saralash"
+          className="min-w-0 flex-1 border border-[#dfe2e6] bg-white px-3 py-2 text-sm text-[#30343a] focus:border-[#2878df] focus:outline-none"
+        >
+          <option value="default">Standart</option>
+          <option value="price-asc">Narx: arzondan qimmatga</option>
+          <option value="price-desc">Narx: qimmatdan arzonga</option>
+          <option value="pe-asc">P/E: pastdan yuqoriga</option>
+        </select>
+      </div>
+
       <div className="space-y-2">
         {filteredAssets.map(asset => {
           const isSelected = selectedAssetId === asset.id;
@@ -225,6 +257,9 @@ export default function QuotesView({
                   <div className="text-xs text-[#777b80] mt-0.5 truncate max-w-[130px] sm:max-w-none">
                     {asset.name}
                   </div>
+                  {asset.peRatio && (
+                    <div className="mt-0.5 text-[10px] font-medium text-[#68717b]">P/E: {asset.peRatio}</div>
+                  )}
                 </div>
               </div>
 

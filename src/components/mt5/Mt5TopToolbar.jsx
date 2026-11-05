@@ -8,7 +8,8 @@ import {
   Clock, 
   ChevronDown,
   Layers,
-  Zap
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 
 export default function Mt5TopToolbar({
@@ -34,13 +35,19 @@ export default function Mt5TopToolbar({
   const ChartTypeIcon = chartType === 'LINE' ? LineChart : chartType === 'BARS' ? BarChart3 : Activity;
 
   return (
-    <div className="sticky top-0 z-30 border-b border-[#e1e3e6] bg-white text-[#4c5158] select-none">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1 px-2 sm:px-4">
-        <button type="button" onClick={onOpenMenu} aria-label="Menyuni ochish" className="grid size-10 shrink-0 place-items-center text-[#383c42]">
-          <Menu size={25} />
-        </button>
+    <div className="sticky top-0 z-30 border-b border-[#e1e3e6] bg-white pt-[calc(0.65rem+env(safe-area-inset-top))] text-[#4c5158] select-none">
+      <div className="mx-auto max-w-7xl px-2 pb-1 sm:px-4">
+        <div className="flex h-9 items-center justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <TrendingUp size={19} className="shrink-0 text-[#2878df]" />
+            <h1 className="truncate text-sm font-bold text-[#30343a]">Aqilli investor</h1>
+          </div>
+          <button type="button" onClick={onOpenMenu} aria-label="Menyuni ochish" className="grid size-9 shrink-0 place-items-center text-[#383c42]">
+            <Menu size={23} />
+          </button>
+        </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-0.5 sm:gap-2">
+        <div className="flex h-11 items-center justify-between gap-0.5">
           <button type="button" onClick={onToggleCrosshair} aria-pressed={isCrosshairActive} title="Krosshair" className={`grid size-10 shrink-0 place-items-center ${isCrosshairActive ? 'text-[#2878df]' : 'text-[#4c5158]'}`}>
             <Crosshair size={24} />
           </button>
@@ -77,4 +84,3 @@ export default function Mt5TopToolbar({
     </div>
   );
 }
-

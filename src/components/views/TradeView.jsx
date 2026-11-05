@@ -20,7 +20,9 @@ export default function TradeView({
   onCloseOrder,
   balance = 10000.00
 }) {
-  const [lot, setLot] = useState(0.10);
+  const [lot, setLot] = useState('0.10');
+  const parsedLot = Number(lot);
+  const isLotValid = Number.isFinite(parsedLot) && parsedLot >= 0.01 && parsedLot <= 10;
 
   // Ochiq pozitsiyalar foydasi
   const totalPnL = openOrders.reduce((acc, order) => {
@@ -36,16 +38,18 @@ export default function TradeView({
   const freeMargin = equity - margin;
 
   const handleAdjustLot = (delta) => {
-    setLot(prev => Math.max(0.01, Number((prev + delta).toFixed(2))));
+    setLot(prev => Math.max(0.01, Number((Number(prev || 0) + delta).toFixed(2))).toFixed(2));
   };
 
   const handleCreateOrder = (type) => {
+    if (!isLotValid) return;
     const newOrder = {
       id: Date.now(),
       symbol,
       type,
-      lot,
+      lot: parsedLot,
       entryPrice: currentPrice,
+      unit,
       time: new Date().toLocaleTimeString().slice(0, 5)
     };
     onOpenOrder(newOrder);
@@ -111,9 +115,16 @@ export default function TradeView({
             >
               <Minus size={14} />
             </button>
-            <span className="w-16 text-center font-mono font-semibold text-sm text-[#3d444d]">
-              {lot.toFixed(2)}
-            </span>
+            <input
+              type="number"
+              min="0.01"
+              max="10"
+              step="0.01"
+              value={lot}
+              onChange={event => setLot(event.target.value)}
+              aria-label="Lot hajmini qo'lda kiriting"
+              className="w-16 border-b border-[#dfe2e6] bg-white text-center font-mono text-sm font-semibold text-[#3d444d] focus:border-[#2878df] focus:outline-none"
+            />
             <button
               onClick={() => handleAdjustLot(0.01)}
               className="grid size-8 place-items-center border border-[#dfe2e6] bg-white text-[#4c5158]"
@@ -124,20 +135,20 @@ export default function TradeView({
 
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setLot(0.01)}
-              className={`px-2 py-1 text-[10px] font-mono font-semibold ${lot === 0.01 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
+              onClick={() => setLot('0.01')}
+              className={`px-2 py-1 text-[10px] font-mono font-semibold ${parsedLot === 0.01 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
             >
               0.01
             </button>
             <button
-              onClick={() => setLot(0.10)}
-              className={`px-2 py-1 text-[10px] font-mono font-semibold ${lot === 0.10 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
+              onClick={() => setLot('0.10')}
+              className={`px-2 py-1 text-[10px] font-mono font-semibold ${parsedLot === 0.10 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
             >
               0.10
             </button>
             <button
-              onClick={() => setLot(0.50)}
-              className={`px-2 py-1 text-[10px] font-mono font-semibold ${lot === 0.50 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
+              onClick={() => setLot('0.50')}
+              className={`px-2 py-1 text-[10px] font-mono font-semibold ${parsedLot === 0.50 ? 'bg-[#2878df] text-white' : 'bg-white text-[#62676d]'}`}
             >
               0.50
             </button>
@@ -148,18 +159,20 @@ export default function TradeView({
         <div className="grid grid-cols-2 gap-3 pt-1">
           <button
             onClick={() => handleCreateOrder('SELL')}
-            className="flex items-center justify-center gap-2 bg-[#d64d58] px-4 py-3 text-xs font-semibold uppercase text-white transition active:opacity-80"
+            disabled={!isLotValid}
+            className="flex items-center justify-center gap-2 bg-[#d64d58] px-4 py-3 text-xs font-semibold uppercase text-white transition active:opacity-80 disabled:opacity-50"
           >
             <ArrowDown size={16} />
-            <span>SOTISH (SELL)</span>
+            <span>SOTISH (SELL) · {unit}</span>
           </button>
 
           <button
             onClick={() => handleCreateOrder('BUY')}
-            className="flex items-center justify-center gap-2 bg-[#2878df] px-4 py-3 text-xs font-semibold uppercase text-white transition active:opacity-80"
+            disabled={!isLotValid}
+            className="flex items-center justify-center gap-2 bg-[#2878df] px-4 py-3 text-xs font-semibold uppercase text-white transition active:opacity-80 disabled:opacity-50"
           >
             <ArrowUp size={16} />
-            <span>XARID (BUY)</span>
+            <span>XARID (BUY) · {unit}</span>
           </button>
         </div>
 
@@ -203,7 +216,7 @@ export default function TradeView({
                       </span>
                     </div>
                     <div className="text-[10px] text-[#777b80] font-sans mt-0.5">
-                      Kirish: <strong>{order.entryPrice}</strong> → Joriy: <strong>{currentPrice}</strong> ({order.time})
+                      Kirish: <strong>{order.entryPrice} {order.unit || unit}</strong> → Joriy: <strong>{currentPrice} {order.unit || unit}</strong> ({order.time})
                     </div>
                   </div>
 
@@ -233,4 +246,3 @@ export default function TradeView({
     </div>
   );
 }
-

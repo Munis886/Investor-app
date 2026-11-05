@@ -20,6 +20,7 @@ export default function ChartView({
   onTriggerSignal,
   isScanning,
   onNavigateToSignals,
+  onQuickTrade,
   onOpenMenu
 }) {
   const lastCandle = candles[candles.length - 1] || { close: 100, open: 100, high: 100, low: 100, volume: 0 };
@@ -27,7 +28,7 @@ export default function ChartView({
   const isSell = signal?.action?.includes('SELL');
 
   return (
-    <div className="flex h-[calc(100dvh-8.5rem)] min-h-[560px] flex-col select-none">
+    <div className="flex h-[calc(100dvh-10.5rem)] min-h-[520px] flex-col select-none">
       {/* 1. MT5 Standart Asboblar Paneli */}
       <Mt5TopToolbar
         symbol={asset.symbol}
@@ -53,7 +54,9 @@ export default function ChartView({
             <div className="text-sm font-semibold text-[#2878df]">{asset.symbol} <span className="font-medium text-[#30343a]">· {timeframe}</span></div>
             <div className="truncate text-xs text-[#555a60]">{asset.name}</div>
           </div>
-          <div className="ml-3 shrink-0 text-right font-mono text-sm font-medium text-[#41464d]">{lastCandle.close}</div>
+          <div className="ml-3 shrink-0 text-right font-mono text-sm font-medium text-[#41464d]">
+            {lastCandle.close} <span className="text-xs text-[#777b80]">{asset.unit}</span>
+          </div>
         </div>
         <CandleChart
           candles={candles}
@@ -65,6 +68,8 @@ export default function ChartView({
           showIndicators={showIndicators}
           onTriggerSignal={onTriggerSignal}
           isScanning={isScanning}
+          onQuickTrade={onQuickTrade}
+          unit={asset.unit}
         />
       </div>
 
@@ -117,4 +122,3 @@ export default function ChartView({
     </div>
   );
 }
-

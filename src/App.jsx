@@ -117,6 +117,7 @@ export default function App() {
       symbol: currentAsset.symbol,
       type,
       lot,
+      unit: currentAsset.unit,
       entryPrice: last ? last.close : 100,
       time: new Date().toLocaleTimeString().slice(0, 5)
     };

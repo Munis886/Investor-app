@@ -13,7 +13,8 @@ export default function CandleChart({
   showIndicators = true,
   onTriggerSignal,
   isScanning,
-  onQuickTrade
+  onQuickTrade,
+  unit = '$'
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -466,6 +467,7 @@ export default function CandleChart({
         <Mt5OneClickTrade
           bidPrice={bidPrice}
           askPrice={askPrice}
+          unit={unit}
           signal={signal}
           onTriggerSignal={onTriggerSignal}
           isScanning={isScanning}

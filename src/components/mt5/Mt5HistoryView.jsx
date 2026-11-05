@@ -57,7 +57,7 @@ export default function Mt5HistoryView({ openOrders = [], closedOrders = [], bal
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <div className="font-mono text-sm text-[#35393f]">{order.entryPrice}</div>
+                <div className="font-mono text-sm text-[#35393f]">{order.entryPrice} <span className="text-xs text-[#777b80]">{order.unit || '$'}</span></div>
                 {order.pnl !== undefined && <div className={`text-xs font-medium ${order.pnl >= 0 ? 'text-[#12856c]' : 'text-[#d44d57]'}`}>{order.pnl >= 0 ? '+' : ''}{order.pnl.toFixed(2)}</div>}
               </div>
             </article>
@@ -75,4 +75,3 @@ export default function Mt5HistoryView({ openOrders = [], closedOrders = [], bal
     </section>
   );
 }
-
